@@ -1,0 +1,24 @@
+- hosts: redis-master-slave
+  become: true
+  tasks:
+    - name: install redis from apt
+      apt: 
+        name: redis-server
+        state: present
+        update_cache: yes
+    - name: change redis bind configuration file
+      shell: "sed -i '/bind 127.0.0.1/c\\bind 0.0.0.0' /etc/redis/redis.conf"
+
+- hosts: redis-slave
+  become: true
+  tasks:
+    - name: edit redis.conf to make this machine as slave
+      shell: "sed -i '/# slaveof <masterip> <masterport>/c\\slaveof {{ redis_master_ip }} 6379' /etc/redis/redis.conf"
+
+- hosts: redis-master-slave
+  become: true
+  tasks:
+    - name: restart service redis-server
+      service: 
+        name: redis-server
+        state: restarted
