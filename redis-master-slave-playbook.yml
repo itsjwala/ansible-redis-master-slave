@@ -7,13 +7,21 @@
         state: present
         update_cache: yes
     - name: change redis bind configuration file
-      shell: "sed -i '/bind 127.0.0.1/c\\bind 0.0.0.0' /etc/redis/redis.conf"
+      lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^bind 127\.0\.0\.1'
+        line: 'bind 0.0.0.0'
+      #shell: "sed -i '/bind 127.0.0.1/c\\bind 0.0.0.0' /etc/redis/redis.conf"
 
 - hosts: redis-slave
   become: true
   tasks:
     - name: edit redis.conf to make this machine as slave
-      shell: "sed -i '/# slaveof <masterip> <masterport>/c\\slaveof {{ redis_master_ip }} 6379' /etc/redis/redis.conf"
+      lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^# slaveof <masterip> <masterport>'
+        line: 'slaveof {{ redis_master_ip }} 6379'
+      #shell: "sed -i '/# slaveof <masterip> <masterport>/c\\slaveof {{ redis_master_ip }} 6379' /etc/redis/redis.conf"
 
 - hosts: redis-master-slave
   become: true
